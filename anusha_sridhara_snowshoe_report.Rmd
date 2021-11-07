@@ -5,9 +5,69 @@ date: "11/4/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
+
+# Overview #
+This code wrangles and then visualizes data for global glacial volume loss from 1961-2003 from [NSIDC (National Snow and Ice Data Centre) site](https://nsidc.org/data/G10002/versions/1)
+
+**Data Citation**: Dyurgerov, M. Edited by M. Meier and R. Armstrong. 2002, updated 2005. Glacier Mass Balance and Regime Measurements and Analysis, 1945-2003, Version 1. [Indicate subset used]. Boulder, Colorado USA. NSIDC: National Snow and Ice Data Center. doi: https://doi.org/10.7265/N52N506F 2021-10-04
+
+# Setup #
+```{r setup, include=TRUE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE)
+#attach packages
+library(tidyverse)
+library(here)
+library(janitor)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+```
+
+# Read in the data #
+```{r}
+## Read glacial loss data ##
+bonanza_hares <- read_csv(here("data", "bonanza_hares.csv"))
+```
+
+## For reference, the first 6 lines of the dataset are shown below
+```{r}
+##Return the first 6 lines:
+head(bonanza_hares)
+```
+
+```{r}
+bonanza_hares_juvenile <- bonanza_hares %>% 
+  mutate(date_new = mdy(date)) %>% 
+  mutate(year_new = year(date_new)) %>% 
+  group_by(year_new) %>% 
+  filter(age=="j") %>% 
+  summarize(count=n())
+
+ggplot(data = bonanza_hares_juvenile, aes(x=year_new, y= count))+
+  geom_point()+
+  theme_bw()+
+  scale_x_continuous(breaks = c(1999:2012))+
+  labs(x = "Years",
+       y = "No of Juvenile Hares",
+       title = "Number of Juvenile Hares trapped by year")
+``` 
+
+```{r}
+bonanza_hares_juvenile_summary <- bonanza_hares_juvenile %>% 
+  summarize(mean_count =mean(count, na.rm = TRUE),
+            median_count =median(count, na.rm = TRUE),
+            max_count = max(count, na.rm=TRUE),
+            min_count = min(count, na.rm =TRUE),
+            sd_count = sd(count, na.rm = TRUE))
+```
+
+```{r}
+bonanza_hare_weights <- bonanza_hares
+```
+
 
 
 
